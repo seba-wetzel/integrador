@@ -12,7 +12,7 @@ app.get("/", (req, res, next) => {
     res.send("hola mundo")
 })
 
-db.sync({}).then(() => {
+db.sync({ force: false }).then(() => {
     app.listen(5000, () => console.log("estamos en linea kpo"))
 })
 

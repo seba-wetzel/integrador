@@ -1,6 +1,6 @@
 const { Router } = require("express");
 const productsRoute = Router();
-const Product = require("../models")
+const { Product } = require("../models")
 
 // GET /productos
 // GET /productos/:id
@@ -9,18 +9,35 @@ const Product = require("../models")
 // DELETE /productos/:id
 
 productsRoute.get("/", (req, res, next) => {
-    res.send("estamos en productos")
-
+    Product.findAll()
+        .then((productos) => res.json(productos))
 });
+
 productsRoute.get("/:id", (req, res, next) => {
+    const id = req.params.id;
+    Product.findByPk(id).then((producto) => res.json(producto))
+        .catch((err) => res.status(404).json(err).end())
 
 });
+
 productsRoute.post("/", (req, res, next) => {
-
+    const { nombre, precio, descripcion, stock } = req.body;
+    Product.create({
+        nombre,
+        precio,
+        descripcion,
+        stock
+    }).then((producto) => res.status(200).json(producto))
+        .catch((err) => {
+            console.log(err)
+            res.sendStatus(503).end()
+        })
 });
+
 productsRoute.put("/:id", (req, res, next) => {
 
 });
+
 productsRoute.delete("/:id", (req, res, next) => {
 
 });
