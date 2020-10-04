@@ -9,15 +9,25 @@ const { Product } = require("../models")
 // DELETE /productos/:id
 
 productsRoute.get("/", (req, res, next) => {
-    Product.findAll()
-        .then((productos) => res.json(productos))
+    if (req.query.stock) {
+        Product.stockLess().then((results) => { res.json(results).end() })
+
+    }
+    else {
+        Product.findAll()
+            .then((productos) => res.json(productos))
+    }
+
 });
 
 productsRoute.get("/:id", (req, res, next) => {
     const id = req.params.id;
-    Product.findByPk(id).then((producto) => res.json(producto))
-        .catch((err) => res.status(404).json(err).end())
 
+    Product.findByPk(id).then((producto) => {
+        res.json(producto.profits())
+
+    })
+        .catch((err) => res.status(404).json(err).end())
 });
 
 productsRoute.post("/", (req, res, next) => {

@@ -15,5 +15,3 @@ app.get("/", (req, res, next) => {
 db.sync({ force: false }).then(() => {
     app.listen(5000, () => console.log("estamos en linea kpo"))
 })
-
-

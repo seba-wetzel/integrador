@@ -28,4 +28,14 @@ Product.init({
     modelName: 'product' // We need to choose the model name
 });
 
+Product.stockLess = () => {
+    return Product.findAll(
+        {
+            where: { stock: 0 }
+        })
+};
+Product.prototype.profits = function () {
+    return this.stock * this.precio;
+}
+
 module.exports = Product;
