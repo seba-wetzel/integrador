@@ -31,7 +31,8 @@ productsRoute.get("/:id", (req, res, next) => {
 });
 
 productsRoute.post("/", (req, res, next) => {
-    const { nombre, precio, descripcion, stock } = req.body;
+    const { nombre, precio, descripcion, stock, categorias } = req.body;
+    console.log(typeof categorias)
     Product.create({
         nombre,
         precio,

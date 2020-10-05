@@ -7,11 +7,17 @@ Product.init({
     // Model attributes are defined here
     nombre: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
+        set: function (nombre) {
+            this.setDataValue('nombre', (this.disponible) ? nombre : nombre + ' NO DISPONIBLE')
+        }
     },
     precio: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
+        get: function () {
+            return '$' + this.getDataValue('precio')
+        }
     },
     descripcion: {
         type: DataTypes.TEXT
@@ -31,11 +37,19 @@ Product.init({
 Product.stockLess = () => {
     return Product.findAll(
         {
-            where: { stock: 0 }
-        })
+            where: {
+                [Op.or]: [{ stock: 0 }, { disponible: false }]
+            }
+        }
+    )
 };
+
+// Product.addHook('beforeCreate', product => {
+//     product.nombre = (product.disponible) ? product.nombre : product.nombre + ' NO DISPONIBLE';
+// });
+
 Product.prototype.profits = function () {
-    return this.stock * this.precio;
+    return this.stock * this.getDataValue('precio');
 }
 
 module.exports = Product;
