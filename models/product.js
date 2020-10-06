@@ -8,9 +8,12 @@ Product.init({
     nombre: {
         type: DataTypes.STRING,
         allowNull: false,
-        set: function (nombre) {
-            this.setDataValue('nombre', (this.disponible) ? nombre : nombre + ' NO DISPONIBLE')
-        }
+        // get() {
+        //     console.log(this.getDataValue(this.disponible))
+        //     const nombre = this.getDataValue('nombre')
+        //     return (this.getDataValue(this.disponible)) ? nombre : nombre + ' NO DISPONIBLE'
+
+        // }
     },
     precio: {
         type: DataTypes.INTEGER,

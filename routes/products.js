@@ -1,6 +1,7 @@
 const { Router } = require("express");
 const productsRoute = Router();
-const { Product } = require("../models")
+const { Product, Categorie } = require("../models")
+const { Op } = require('sequelize')
 
 // GET /productos
 // GET /productos/:id
@@ -9,15 +10,19 @@ const { Product } = require("../models")
 // DELETE /productos/:id
 
 productsRoute.get("/", (req, res, next) => {
-    if (req.query.stock) {
-        Product.stockLess().then((results) => { res.json(results).end() })
-
-    }
-    else {
-        Product.findAll()
-            .then((productos) => res.json(productos))
-    }
-
+    const query = req.query.categoria
+    //Product.stockLess().then((results) => { res.json(results).end() })
+    Product.findAll({
+        where: { '$categories.nombre$': { [Op.eq]: query } },
+        include: [{
+            model: Categorie,
+            as: "categories",
+            required: true,
+            attributes: ['nombre'],
+            through:
+                { attributes: [] }
+        }]
+    }).then(productos => res.json(productos))
 });
 
 productsRoute.get("/:id", (req, res, next) => {
@@ -30,26 +35,36 @@ productsRoute.get("/:id", (req, res, next) => {
         .catch((err) => res.status(404).json(err).end())
 });
 
-productsRoute.post("/", (req, res, next) => {
-    const { nombre, precio, descripcion, stock, categorias } = req.body;
-    console.log(typeof categorias)
-    Product.create({
+productsRoute.post("/", async (req, res, next) => {
+    const { nombre, precio, descripcion, disponible, stock, categorias } = req.body;
+    let categories = [...categorias.split(",")]
+
+    const product = await Product.create({
         nombre,
         precio,
         descripcion,
+        disponible,
         stock
-    }).then((producto) => res.status(200).json(producto))
-        .catch((err) => {
-            console.log(err)
-            res.sendStatus(503).end()
+    })
+
+
+    Promise.all(categories.map(async categoria => await Categorie.findOrCreate({ where: { nombre: categoria } })))
+        .then(async arr => {
+            await product.addCategories(arr.map(array => array[0]))
+            res.status(200).json(product)
         })
-});
+})
+
 
 productsRoute.put("/:id", (req, res, next) => {
 
 });
 
-productsRoute.delete("/:id", (req, res, next) => {
+productsRoute.delete("/:id", async (req, res, next) => {
+    const id = req.params.id;
+    const product = await Product.findByPk(id);
+    product.destroy();
+    res.json(product);
 
 });
 
