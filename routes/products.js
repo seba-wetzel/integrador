@@ -18,9 +18,9 @@ productsRoute.get("/", (req, res, next) => {
             model: Categorie,
             as: "categories",
             required: true,
-            attributes: ['nombre'],
-            through:
-                { attributes: [] }
+            attributes: ['nombre', 'id'],
+            // through:
+            //     { attributes: [] }
         }]
     }).then(productos => res.json(productos))
 });
@@ -56,7 +56,17 @@ productsRoute.post("/", async (req, res, next) => {
 })
 
 
-productsRoute.put("/:id", (req, res, next) => {
+productsRoute.put("/:id", async (req, res, next) => {
+    const id = req.params.id;
+    const { nombre, precio, descripcion, disponible, stock } = req.body;
+
+    const [num, productRows] = await Product.update({ nombre, precio, descripcion, disponible, stock }, {
+        where: {
+            id
+        }, returning: true,
+        plain: true,
+    })
+    res.json(productRows);
 
 });
 
@@ -66,6 +76,15 @@ productsRoute.delete("/:id", async (req, res, next) => {
     product.destroy();
     res.json(product);
 
+});
+
+productsRoute.delete("/:id/:category", async (req, res, next) => {
+    const { id, category } = req.params
+    const product = await Product.findByPk(id);
+    const categories = await product.getCategories({ where: { 'nombre': category } });
+    const remove = await product.removeCategories(categories);
+    console.log(remove)
+    res.json(categories);
 });
 
 module.exports = productsRoute;
